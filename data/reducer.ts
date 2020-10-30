@@ -1,11 +1,20 @@
 import { ActionType } from "./actionType";
-import { Action } from "./model";
+import { Action, Profile } from "./model";
 
 export interface StateType {
   data?: {};
+  profile: Profile;
 }
 
-const InitialState: StateType = {};
+const InitialState: StateType = {
+  profile: {
+    lastName: 'Иванов',
+    firstName: 'Иван',
+    patronymic: 'Иванович',
+    birthday: new Date(1999, 7, 24),
+    specialty: "Строитель"
+  }
+};
 
 export const reducer = (state = InitialState, action: Action) => {
   switch (action.type) {
