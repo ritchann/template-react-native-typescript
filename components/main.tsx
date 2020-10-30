@@ -1,17 +1,19 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { StoreType } from "../core/rootReducer";
 import { getDataAsync } from "../data/actions";
+import { Button } from "@ui-kitten/components";
+
 
 export const Main = () => {
   const data = useSelector((state: StoreType) => state.data.data);
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  const click = useCallback(() => {
     dispatch(getDataAsync());
-  }, [getDataAsync]);
+  }, [dispatch, getDataAsync]);
 
   useMemo(() => {
     console.log(data);
@@ -19,7 +21,7 @@ export const Main = () => {
 
   return (
     <View style={styles.container}>
-      <Text>{"Добрый вечер"}</Text>
+      <Button onPress={click}>{"BUTTON"}</Button>
     </View>
   );
 };
