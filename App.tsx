@@ -14,6 +14,7 @@ import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { LoginScreen } from "./sreens/loginScreen";
 import { NavigationContainer } from "@react-navigation/native";
+import { SOSScreen } from "./sreens/sosScreen";
 
 export default function App() {
   const Tab = createBottomTabNavigator();
@@ -21,6 +22,10 @@ export default function App() {
   const HomeIcon = (props: any) => <Icon {...props} name="home-outline" />;
 
   const PersonIcon = (props: any) => <Icon {...props} name="person-outline" />;
+
+  const AlertIcon = (props: any) => (
+    <Icon {...props} name="alert-triangle-outline" />
+  );
 
   const BottomTabBar = ({
     navigation,
@@ -34,6 +39,7 @@ export default function App() {
       onSelect={(index) => navigation.navigate(state.routeNames[index])}
     >
       <BottomNavigationTab icon={HomeIcon} />
+      <BottomNavigationTab icon={AlertIcon} />
       <BottomNavigationTab icon={PersonIcon} />
     </BottomNavigation>
   );
@@ -41,6 +47,7 @@ export default function App() {
   const TabNavigator = () => (
     <Tab.Navigator tabBar={(props) => <BottomTabBar {...props} />}>
       <Tab.Screen name="HOME" component={LoginScreen} />
+      <Tab.Screen name="SOS" component={SOSScreen} />
       <Tab.Screen name="PROFILE" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -52,7 +59,7 @@ export default function App() {
         <Provider store={store}>
           <NavigationContainer>
             <TabNavigator />
-          </NavigationContainer>       
+          </NavigationContainer>
         </Provider>
       </ApplicationProvider>
     </>
