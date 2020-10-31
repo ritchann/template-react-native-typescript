@@ -14,7 +14,9 @@ const InitialState: StateType = {
     firstName: 'Иван',
     patronymic: 'Иванович',
     birthday: new Date(1999, 7, 24),
-    specialty: "Строитель"
+    specialty: "Строитель",
+    snils: '222-233-445 85',
+    inn: '3664069397'
   },
   buildingSite: { 
     id: 0, 

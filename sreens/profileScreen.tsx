@@ -15,6 +15,7 @@ import { StoreType } from "../core/rootReducer";
 import { Profile } from "../data/model";
 import { setProfileData } from "../data/actions";
 import { PedometrScreen } from "./pedometrSreen";
+import { THEME } from "../data/constants";
 
 const CalendarIcon = (props: any) => <Icon {...props} name="calendar" />;
 
@@ -41,7 +42,10 @@ return showModal ? (
   ) : (
 <View style={styles.container}>
   <Text category="h4" style={styles.label}>
-  Профиль
+    Профиль
+  </Text>
+  <Text category="s1" style={styles.statistics} onPress={() => setShowModal(true)}>
+    Посмотреть статистику
   </Text>
     <Input
     value={model?.lastName}
@@ -74,6 +78,22 @@ return showModal ? (
     }
     style={styles.field}
     />
+    <Input
+    value={model?.inn}
+    label="ИНН"
+    onChangeText={(inn) =>
+    setModel(model ? { ...model, inn } : model)
+    }
+    style={styles.field}
+    />
+    <Input
+    value={model?.snils}
+    label="СНИЛС"
+    onChangeText={(snils) =>
+    setModel(model ? { ...model, snils } : model)
+    }
+    style={styles.field}
+    />
     <Datepicker
     label="Дата рождения"
     date={model?.birthday}
@@ -85,11 +105,8 @@ return showModal ? (
     min={new Date(1970, 0, 1)}
     max={new Date(2020, 0, 1)}
     />
-    <Button style={styles.saveButton} onPress={() => setShowModal(true)}>
-    Просмотреть статистику
-    </Button>
     <Button style={styles.saveButton} onPress={onChange}>
-    Сохранить
+      Сохранить
     </Button>
   <Modal visible={show} backdropStyle={styles.backdrop}>
     <Card disabled={true}>
@@ -108,26 +125,20 @@ const styles = StyleSheet.create({
   },
   datePicker: {
     width: "100%",
-    marginTop: 10,
+    marginTop: 5,
   },
   field: {
-    marginTop: 10,
+    marginTop: 2,
   },
   label: {
     alignSelf: "flex-start",
-    marginTop: 30,
-    marginBottom: 30,
-  },
-  icon: {
-    width: 32,
-    height: 32,
-    marginTop: 10,
-    marginRight: 10,
+    marginTop: 15,
+    marginBottom: 5,
   },
   saveButton: {
     alignSelf: "flex-end",
     width: "40%",
-    marginTop: 20,
+    marginTop: 10,
   },
   backdrop: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -136,4 +147,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 20,
   },
+  statistics: {
+    marginBottom: 10,
+    color: THEME.PRIMARY_COLOR
+  }
 });

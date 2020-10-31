@@ -18,6 +18,8 @@ export interface Profile {
   patronymic: string;
   birthday?: Date;
   specialty: string;
+  inn: string;
+  snils: string;
 }
 
 export interface SiteEventRequest {

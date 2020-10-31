@@ -16,6 +16,5 @@ export const steps = [
   { date: "27/10", value: 2303, time: 12.2 },
   { date: "28/10", value: 4351, time: 9 },
   { date: "29/10", value: 3041, time: 8.4 },
-  { date: "30/10", value: 1402, time: 12.4 },
-  { date: "31/10", value: 5600, time: 12 },
+  { date: "30/10", value: 1402, time: 12.4 }
 ];
