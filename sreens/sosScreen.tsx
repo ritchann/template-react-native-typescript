@@ -1,13 +1,43 @@
 import { Button, Text } from "@ui-kitten/components";
 import React, { useCallback } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert, Vibration } from "react-native";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export const SOSScreen = () => {
   const onLongPress = useCallback(() => {
     Alert.alert(
       "",
       "Ваш сигнал SOS отправлен",
-      [{ text: "OK", onPress: () => {} }],
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            Notifications.setNotificationChannelAsync("new-emails", {
+              name: "E-mail notifications",
+              importance: Notifications.AndroidImportance.HIGH,
+            });
+            Notifications.scheduleNotificationAsync({
+              content: {
+                title: "Сработал сигнал SOS 📣",
+                body: "Проверьте работника (3 этаж, 2 периметр)",
+              },
+              trigger: {
+                seconds: 5,
+                channelId: "new-emails",
+              },
+            });
+            Vibration.vibrate([1000, 2000, 1000, 2000]);
+          },
+        },
+      ],
       { cancelable: false }
     );
   }, []);
