@@ -1,46 +1,48 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Provider } from "react-redux";
 import { store } from "./core/store";
-import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
+import {
+  ApplicationProvider,
+  BottomNavigation,
+  BottomNavigationTab,
+  Icon,
+  IconRegistry,
+} from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import { ProfileScreen } from "./sreens/profileScreen";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
-import { Main } from "./components/main";
-import { TestScreen } from "./sreens/testScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import {
-  BottomNavigation,
-  BottomNavigationTab,
-  Layout,
-  Text,
-  Icon,
-} from "@ui-kitten/components";
 import { LoginScreen } from "./sreens/loginScreen";
 
-const { Navigator, Screen } = createBottomTabNavigator();
-
 export default function App() {
-  const [index, setIndex] = useState(0);
+  const Tab = createBottomTabNavigator();
 
-  useMemo(() => console.log(index), [index]);
+  const HomeIcon = (props: any) => <Icon {...props} name="home-outline" />;
 
-  const BottomTabBar = () => (
+  const PersonIcon = (props: any) => <Icon {...props} name="person-outline" />;
+
+  const BottomTabBar = ({
+    navigation,
+    state,
+  }: {
+    navigation: any;
+    state: any;
+  }) => (
     <BottomNavigation
-      selectedIndex={index}
-      onSelect={(index) => setIndex(index)}
+      selectedIndex={state.index}
+      onSelect={(index) => navigation.navigate(state.routeNames[index])}
     >
-      <BottomNavigationTab title="LOGIN" />
-      <BottomNavigationTab title="SOS" />
-      <BottomNavigationTab title="SOS" />
+      <BottomNavigationTab icon={HomeIcon} />
+      <BottomNavigationTab icon={PersonIcon} />
     </BottomNavigation>
   );
 
   const TabNavigator = () => (
-    <Navigator tabBar={(props) => <BottomTabBar />}>
-      {index === 0 && <Screen name="LOGIN" component={TestScreen} />}
-      {index === 1 && <Screen name="SOS" component={LoginScreen} />}
-    </Navigator>
+    <Tab.Navigator tabBar={(props) => <BottomTabBar {...props} />}>
+      <Tab.Screen name="HOME" component={LoginScreen} />
+      <Tab.Screen name="PROFILE" component={ProfileScreen} />
+    </Tab.Navigator>
   );
 
   return (
@@ -48,7 +50,9 @@ export default function App() {
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={eva.light}>
         <Provider store={store}>
-          <ProfileScreen />
+          <NavigationContainer>
+            <TabNavigator />
+          </NavigationContainer>
         </Provider>
       </ApplicationProvider>
     </>
