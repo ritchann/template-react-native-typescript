@@ -44,7 +44,7 @@ export const SOSScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.description} category="label">
+      <Text style={styles.description} category="h6">
         {"Для отправки сигнала SOS удерживайте кнопку в течение 3 секунд"}
       </Text>
       <Button
@@ -77,5 +77,6 @@ const styles = StyleSheet.create({
     marginTop: 120,
     marginBottom: 5,
     color: "#8d9dae",
+    textAlign: 'center'
   },
 });

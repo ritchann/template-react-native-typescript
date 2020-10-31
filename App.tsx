@@ -15,9 +15,11 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { LoginScreen } from "./sreens/loginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { SOSScreen } from "./sreens/sosScreen";
+import { LogBox } from 'react-native';
 
 export default function App() {
   const Tab = createBottomTabNavigator();
+  LogBox.ignoreAllLogs();
 
   const HomeIcon = (props: any) => <Icon {...props} name="home-outline" />;
 

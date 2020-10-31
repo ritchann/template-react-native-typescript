@@ -16,6 +16,23 @@ export interface Profile {
   firstName: string;
   lastName: string;
   patronymic: string;
-  birthday: Date;
+  birthday?: Date;
   specialty: string;
+}
+
+export interface SiteEventRequest {
+  event_type: string;
+  created_at: string;
+  data: { 
+    worker_id?: number, 
+    site_id?: number 
+  };
+}
+
+export interface IncidentRequest {
+  event_type: string;
+  created_at: string;
+  data: {
+    message: string;
+  }
 }

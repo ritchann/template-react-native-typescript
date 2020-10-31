@@ -8,12 +8,13 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { StoreType } from "../core/rootReducer";
-import { getDataAsync, setBuildingSite, setIsStarted } from "../data/actions";
+import { getDataAsync, setBuildingSite, setIsStarted, setSiteEventAsync } from "../data/actions";
 import { Autocomplete, AutocompleteItem, Button, Card, Text, Modal } from "@ui-kitten/components";
 import { buildingSites } from "./data";
 import * as Location from "expo-location";
 import { BuildingSite, Profile } from "../data/model";
 import { THEME } from '../data/constants';
+import { setSiteEvent } from "../data/api";
 
 export const LoginScreen = () => {
   const buildingSite = useSelector(
@@ -39,14 +40,32 @@ export const LoginScreen = () => {
     return () => clearTimeout(timer);
   }, [timeLeft]);
 
+  const sendStart = useCallback(() => {
+    dispatch(setSiteEventAsync({ 
+      event_type: 'shift_start', 
+      created_at: new Date().toISOString(), 
+      data: { 
+        worker_id: 0, 
+        site_id: (buildingSite as BuildingSite).id 
+      }}))
+  }, [buildingSite]);
+
+  const sendEnd = useCallback(() => {
+    dispatch(setSiteEventAsync({ 
+      event_type: 'shift_end', 
+      created_at: new Date().toISOString(), 
+      data: { 
+        worker_id: 0, 
+        site_id: (buildingSite as BuildingSite).id 
+      }}))
+  }, [buildingSite]);
+
   const click = useCallback(() => {
-    if (profile == null) setEmptyWarning(true);
-    else {
-      dispatch(getDataAsync());
-      dispatch(setIsStarted(true));
-      setTimeLeft(0);
-    }
-  }, [dispatch, getDataAsync]);
+    dispatch(getDataAsync());
+    dispatch(setIsStarted(true));
+    setTimeLeft(0);
+    sendStart();
+  }, [dispatch, getDataAsync, sendStart]);
 
   const onChangeText = useCallback((newValue: string) => {
     setValue(newValue);
@@ -59,9 +78,15 @@ export const LoginScreen = () => {
     lon: 0,
   });
 
+  const getLocation = useCallback(() => {
+    let status = Location.requestPermissionsAsync().then(res => res.status);
+    return Location.getCurrentPositionAsync({}).then(x => {
+      const { latitude, longitude } = x.coords;
+    });
+  }, []);
+
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestPermissionsAsync();
       let location = await Location.getCurrentPositionAsync({});
       setLocation({
         lat: location.coords.latitude,
@@ -71,8 +96,13 @@ export const LoginScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (location) console.log(location);
-  }, [location]);
+    if (isStarted) {
+      const handle = setInterval(() => getLocation(), 5000);    
+      return () => {
+        clearInterval(handle);
+      }
+    }
+  }, [isStarted]);
 
   useEffect(() => {
     if (location.lat !== 0 && location.lon !== 0) {
@@ -101,7 +131,6 @@ export const LoginScreen = () => {
       const newData = data.filter((x) => x.id !== data[index].id);
       newData.unshift(data[index]);
       setData(newData);
-      console.log("data ", data);
     },
     [data]
   );
@@ -170,7 +199,10 @@ export const LoginScreen = () => {
           Завершить смену
         </Button> 
         :
-        <Button onPress={() => setStartWarning(true)}>
+        <Button onPress={() => {
+          if (profile == null) setEmptyWarning(true);
+          else setStartWarning(true);
+          }}>
           Начать смену
         </Button>
       }
@@ -189,6 +221,7 @@ export const LoginScreen = () => {
           <Button style={{marginRight: 10}} onPress={() => {
             setEndWarning(false);
             dispatch(setIsStarted(false));
+            sendEnd();
           }}>
             Да
           </Button>
