@@ -15,3 +15,7 @@ export const setProfileData: (data: Profile) => Action = (data) => {
 export const setBuildingSite: (data: BuildingSite) => Action = (data) => {
   return { type: ActionType.SETBUILDINGSITE, data };
 };
+
+export const setIsStarted: (data: boolean) => Action = (data) => {
+  return { type: ActionType.SETISSTARTED, data };
+}

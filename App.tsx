@@ -11,9 +11,9 @@ import {
 import * as eva from "@eva-design/eva";
 import { ProfileScreen } from "./sreens/profileScreen";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
-import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { LoginScreen } from "./sreens/loginScreen";
+import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   const Tab = createBottomTabNavigator();
@@ -52,7 +52,7 @@ export default function App() {
         <Provider store={store}>
           <NavigationContainer>
             <TabNavigator />
-          </NavigationContainer>
+          </NavigationContainer>       
         </Provider>
       </ApplicationProvider>
     </>

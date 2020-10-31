@@ -1,19 +1,19 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
   FlatList,
-  Text,
   ImageBackground,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { StoreType } from "../core/rootReducer";
-import { getDataAsync, setBuildingSite } from "../data/actions";
-import { Autocomplete, AutocompleteItem, Button } from "@ui-kitten/components";
+import { getDataAsync, setBuildingSite, setIsStarted } from "../data/actions";
+import { Autocomplete, AutocompleteItem, Button, Card, Text, Modal } from "@ui-kitten/components";
 import { buildingSites } from "./data";
 import * as Location from "expo-location";
-import { BuildingSite } from "../data/model";
+import { BuildingSite, Profile } from "../data/model";
+import { THEME } from '../data/constants';
 
 export const LoginScreen = () => {
   const buildingSite = useSelector(
@@ -21,12 +21,31 @@ export const LoginScreen = () => {
   );
 
   const dispatch = useDispatch();
+  const profile: Profile = useSelector((state: StoreType) => state.data.profile);
+  const isStarted = useSelector((state: StoreType) => state.data.isStarted);
 
   const [value, setValue] = useState("");
   const [data, setData] = useState(buildingSites);
+  const [emptyWarning, setEmptyWarning] = useState(false);
+  const [endWarning, setEndWarning] = useState(false);
+  const [startWarning, setStartWarning] = useState(false);
+
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeLeft(timeLeft + 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
 
   const click = useCallback(() => {
-    dispatch(getDataAsync());
+    if (profile == null) setEmptyWarning(true);
+    else {
+      dispatch(getDataAsync());
+      dispatch(setIsStarted(true));
+      setTimeLeft(0);
+    }
   }, [dispatch, getDataAsync]);
 
   const onChangeText = useCallback((newValue: string) => {
@@ -87,22 +106,38 @@ export const LoginScreen = () => {
     [data]
   );
 
+  const title = useMemo(() => {
+    return profile == null ? `Добрый день!` : `Добрый день, ${(profile as Profile).firstName}!`;
+  }, [profile]);
+
+  const dateString = useMemo(() => {
+    var hours = Math.floor(timeLeft / 60 / 60);
+    var minutes = Math.floor(timeLeft / 60) - (hours * 60);
+    var seconds = timeLeft % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, [timeLeft]);
+
   return (
     <View style={styles.container}>
+      <Text category="h4" style={styles.title}>{title}</Text>
       <View>
         <Autocomplete
           style={styles.input}
-          placeholder="Введите адрес строительной площадки"
+          placeholder="Введите адрес или выберите из списка"
           value={value}
           onSelect={onSelect}
           onChangeText={onChangeText}
+          label="Строительная площадка"
+          disabled={isStarted}
         >
           {data.map((item) => (
             <AutocompleteItem key={item.id} title={item.address} />
           ))}
         </Autocomplete>
+        <Text category="label" style={isStarted ? { ...styles.flatListDesc, opacity: 0.5 } : styles.flatListDesc }>Ближайшие:</Text>
         <FlatList
-          style={styles.flatList}
+          scrollEnabled={!isStarted}
+          style={isStarted ? { ...styles.flatList, opacity: 0.5 } : { ...styles.flatList }}
           data={data}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -117,13 +152,11 @@ export const LoginScreen = () => {
                     ? styles.selectedSite
                     : styles.image,
                 ]}
-                source={{
-                  uri:
-                    "https://www.business-class.su/uploads/material/42/45/84/424584729b7b143abc62ef430fc040fc.jpg",
-                }}
+                source={item.image}  
               >
                 <View style={styles.itemTextImage}>
-                  <Text style={styles.imageText}>{item.address}</Text>
+              <Text style={styles.imageText}>{item.title}</Text>
+                  <Text style={styles.descriptionText}>{item.address}</Text>
                 </View>
               </ImageBackground>
             </TouchableOpacity>
@@ -131,66 +164,138 @@ export const LoginScreen = () => {
           horizontal
         />
       </View>
-      <Button style={styles.buttonLogin} onPress={click}>
-        {"Начать смену"}
-      </Button>
+      <Text category="h5" style={styles.buttonLogin}>{isStarted === true ? dateString : ''}</Text>
+      {isStarted === true ?
+        <Button onPress={() => setEndWarning(true)}>
+          Завершить смену
+        </Button> 
+        :
+        <Button onPress={() => setStartWarning(true)}>
+          Начать смену
+        </Button>
+      }
+      <Modal visible={emptyWarning} backdropStyle={styles.backdrop}>
+        <Card disabled={true}>
+          <Text style={styles.modalText}>Пожалуйста, заполните личные данные</Text>
+          <Button onPress={() => setEmptyWarning(false)}>
+            Хорошо
+          </Button>
+        </Card>
+      </Modal>
+      <Modal visible={endWarning} backdropStyle={styles.backdrop} style={{ width: '80%' }}>
+        <Card disabled={true}>
+          <Text style={styles.modalText}>Вы действительно хотите завершить смену?</Text>
+          <View style={styles.buttons}>
+          <Button style={{marginRight: 10}} onPress={() => {
+            setEndWarning(false);
+            dispatch(setIsStarted(false));
+          }}>
+            Да
+          </Button>
+          <Button appearance="outline" onPress={() => setEndWarning(false)}>
+            Нет
+          </Button>
+          </View>
+        </Card>
+      </Modal>
+      <Modal visible={startWarning} backdropStyle={styles.backdrop} style={{ width: '80%' }}>
+        <Card disabled={true}>
+          <Text style={styles.modalText}>Вы действительно хотите начать смену?</Text>
+          <View style={styles.buttons}>
+          <Button style={{ marginRight: 10 }} onPress={() => {
+            click();
+            setStartWarning(false);
+          }}>
+            Да
+          </Button>
+          <Button appearance="outline" onPress={() => setStartWarning(false)}>
+            Нет
+          </Button>
+          </View>
+        </Card>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: "space-around",
     alignItems: "center",
+    padding: 20
   },
-  buttonLogin: {},
+  title: {
+    alignSelf: 'flex-start',
+    marginTop: 30
+  },
+  buttonLogin: {
+    marginTop: 5,
+    paddingBottom: 15,
+    height: 30
+  },
   flatList: {
-    marginTop: 60,
-    maxHeight: 400,
-    padding: 4,
+    maxHeight: 300,
+    paddingBottom: 20
   },
   site: {
     margin: 4,
-    width: 250,
-    borderRadius: 10,
+    width: 200,
+    borderRadius: 5,
     elevation: 4,
     borderColor: "black",
     shadowColor: "#000",
-    shadowRadius: 2,
+    shadowRadius: 0,
     shadowOpacity: 0.3,
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: 0, height: 0 },
     backgroundColor: "#fff",
   },
   image: {
     width: "100%",
     height: "100%",
-    opacity: 0.5,
     flex: 1,
     justifyContent: "flex-start",
     shadowRadius: 2,
-    borderRadius: 20 / 2,
+    borderRadius: 5,
     overflow: "hidden",
   },
   imageText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "black",
-    opacity: 5,
-    textDecorationColor: "black",
+    color: THEME.PRIMARY_COLOR,
+    marginTop: 10
   },
   itemTextImage: {
     flex: 1,
     alignItems: "center",
-    minHeight: 100,
+    minHeight: 100
   },
   selectedSite: {
     borderWidth: 2.5,
-    borderColor: "#3366ff",
-    borderRadius: 10,
+    borderColor: THEME.SELECTED_COLOR,
+    borderRadius: 5,
   },
   input: {
-    paddingTop: 70,
-    padding: 10,
+    marginTop: 20
   },
+  descriptionText: {
+    textAlign: 'left',
+    color: THEME.SECONDARY_COLOR
+  },
+  flatListDesc: {
+    marginTop: 20,
+    marginBottom: 5,
+    color: '#8d9dae'
+  },
+  backdrop: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalText: {
+    marginTop: 5,
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'center'
+  }
 });

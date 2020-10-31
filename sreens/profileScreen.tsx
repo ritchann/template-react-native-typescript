@@ -70,7 +70,7 @@ export const ProfileScreen = () => {
         <Card disabled={true}>
           <Text style={styles.modalText}>Данные успешно сохранены</Text>
           <Button onPress={() => setShow(false)}>
-            Приколдесно, спасибо
+            Отлично!
           </Button>
         </Card>
       </Modal>
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
   },
   label: {
     alignSelf: 'flex-start',
-    marginTop: 10,
-    marginBottom: 40
+    marginTop: 30,
+    marginBottom: 30
   },
   icon: {
     width: 32,
@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginTop: 5,
-    marginBottom: 10
+    marginBottom: 20
   }
 });
