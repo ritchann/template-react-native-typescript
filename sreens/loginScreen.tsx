@@ -4,16 +4,29 @@ import {
   StyleSheet,
   FlatList,
   ImageBackground,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { StoreType } from "../core/rootReducer";
-import { getDataAsync, setBuildingSite, setIsStarted, setSiteEventAsync } from "../data/actions";
-import { Autocomplete, AutocompleteItem, Button, Card, Text, Modal } from "@ui-kitten/components";
+import {
+  getDataAsync,
+  setBuildingSite,
+  setIsStarted,
+  setPositionAsync,
+  setSiteEventAsync,
+} from "../data/actions";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  Card,
+  Text,
+  Modal,
+} from "@ui-kitten/components";
 import { buildingSites } from "./data";
 import * as Location from "expo-location";
 import { BuildingSite, Profile } from "../data/model";
-import { THEME } from '../data/constants';
+import { THEME } from "../data/constants";
 import { setSiteEvent } from "../data/api";
 
 export const LoginScreen = () => {
@@ -22,7 +35,9 @@ export const LoginScreen = () => {
   );
 
   const dispatch = useDispatch();
-  const profile: Profile = useSelector((state: StoreType) => state.data.profile);
+  const profile: Profile = useSelector(
+    (state: StoreType) => state.data.profile
+  );
   const isStarted = useSelector((state: StoreType) => state.data.isStarted);
 
   const [value, setValue] = useState("");
@@ -41,23 +56,29 @@ export const LoginScreen = () => {
   }, [timeLeft]);
 
   const sendStart = useCallback(() => {
-    dispatch(setSiteEventAsync({ 
-      event_type: 'shift_start', 
-      created_at: new Date().toISOString(), 
-      data: { 
-        worker_id: 0, 
-        site_id: (buildingSite as BuildingSite).id 
-      }}))
+    dispatch(
+      setSiteEventAsync({
+        event_type: "shift_start",
+        created_at: new Date().toISOString(),
+        data: {
+          worker_id: 0,
+          site_id: (buildingSite as BuildingSite).id,
+        },
+      })
+    );
   }, [buildingSite]);
 
   const sendEnd = useCallback(() => {
-    dispatch(setSiteEventAsync({ 
-      event_type: 'shift_end', 
-      created_at: new Date().toISOString(), 
-      data: { 
-        worker_id: 0, 
-        site_id: (buildingSite as BuildingSite).id 
-      }}))
+    dispatch(
+      setSiteEventAsync({
+        event_type: "shift_end",
+        created_at: new Date().toISOString(),
+        data: {
+          worker_id: 0,
+          site_id: (buildingSite as BuildingSite).id,
+        },
+      })
+    );
   }, [buildingSite]);
 
   const click = useCallback(() => {
@@ -79,9 +100,18 @@ export const LoginScreen = () => {
   });
 
   const getLocation = useCallback(() => {
-    let status = Location.requestPermissionsAsync().then(res => res.status);
-    return Location.getCurrentPositionAsync({}).then(x => {
+    let status = Location.requestPermissionsAsync().then((res) => res.status);
+    return Location.getCurrentPositionAsync({}).then((x) => {
       const { latitude, longitude } = x.coords;
+      console.log(latitude, longitude);
+      dispatch(
+        setPositionAsync({
+          lat: latitude,
+          lon: longitude,
+          worker_id: 0,
+          site_id: (buildingSite as BuildingSite).id,
+        })
+      );
     });
   }, []);
 
@@ -97,10 +127,10 @@ export const LoginScreen = () => {
 
   useEffect(() => {
     if (isStarted) {
-      const handle = setInterval(() => getLocation(), 5000);    
+      const handle = setInterval(() => getLocation(), 5000);
       return () => {
         clearInterval(handle);
-      }
+      };
     }
   }, [isStarted]);
 
@@ -136,19 +166,25 @@ export const LoginScreen = () => {
   );
 
   const title = useMemo(() => {
-    return profile == null ? `Добрый день!` : `Добрый день, ${(profile as Profile).firstName}!`;
+    return profile == null
+      ? `Добрый день!`
+      : `Добрый день, ${(profile as Profile).firstName}!`;
   }, [profile]);
 
   const dateString = useMemo(() => {
     var hours = Math.floor(timeLeft / 60 / 60);
-    var minutes = Math.floor(timeLeft / 60) - (hours * 60);
+    var minutes = Math.floor(timeLeft / 60) - hours * 60;
     var seconds = timeLeft % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }, [timeLeft]);
 
   return (
     <View style={styles.container}>
-      <Text category="h4" style={styles.title}>{title}</Text>
+      <Text category="h4" style={styles.title}>
+        {title}
+      </Text>
       <View>
         <Autocomplete
           style={styles.input}
@@ -163,10 +199,23 @@ export const LoginScreen = () => {
             <AutocompleteItem key={item.id} title={item.address} />
           ))}
         </Autocomplete>
-        <Text category="label" style={isStarted ? { ...styles.flatListDesc, opacity: 0.5 } : styles.flatListDesc }>Ближайшие:</Text>
+        <Text
+          category="label"
+          style={
+            isStarted
+              ? { ...styles.flatListDesc, opacity: 0.5 }
+              : styles.flatListDesc
+          }
+        >
+          Ближайшие:
+        </Text>
         <FlatList
           scrollEnabled={!isStarted}
-          style={isStarted ? { ...styles.flatList, opacity: 0.5 } : { ...styles.flatList }}
+          style={
+            isStarted
+              ? { ...styles.flatList, opacity: 0.5 }
+              : { ...styles.flatList }
+          }
           data={data}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -181,10 +230,10 @@ export const LoginScreen = () => {
                     ? styles.selectedSite
                     : styles.image,
                 ]}
-                source={item.image}  
+                source={item.image}
               >
                 <View style={styles.itemTextImage}>
-              <Text style={styles.imageText}>{item.title}</Text>
+                  <Text style={styles.imageText}>{item.title}</Text>
                   <Text style={styles.descriptionText}>{item.address}</Text>
                 </View>
               </ImageBackground>
@@ -193,57 +242,77 @@ export const LoginScreen = () => {
           horizontal
         />
       </View>
-      <Text category="h5" style={styles.buttonLogin}>{isStarted === true ? dateString : ''}</Text>
-      {isStarted === true ?
-        <Button onPress={() => setEndWarning(true)}>
-          Завершить смену
-        </Button> 
-        :
-        <Button onPress={() => {
-          if (profile == null) setEmptyWarning(true);
-          else setStartWarning(true);
-          }}>
+      <Text category="h5" style={styles.buttonLogin}>
+        {isStarted === true ? dateString : ""}
+      </Text>
+      {isStarted === true ? (
+        <Button onPress={() => setEndWarning(true)}>Завершить смену</Button>
+      ) : (
+        <Button
+          onPress={() => {
+            if (profile == null) setEmptyWarning(true);
+            else setStartWarning(true);
+          }}
+        >
           Начать смену
         </Button>
-      }
+      )}
       <Modal visible={emptyWarning} backdropStyle={styles.backdrop}>
         <Card disabled={true}>
-          <Text style={styles.modalText}>Пожалуйста, заполните личные данные</Text>
-          <Button onPress={() => setEmptyWarning(false)}>
-            Хорошо
-          </Button>
+          <Text style={styles.modalText}>
+            Пожалуйста, заполните личные данные
+          </Text>
+          <Button onPress={() => setEmptyWarning(false)}>Хорошо</Button>
         </Card>
       </Modal>
-      <Modal visible={endWarning} backdropStyle={styles.backdrop} style={{ width: '80%' }}>
+      <Modal
+        visible={endWarning}
+        backdropStyle={styles.backdrop}
+        style={{ width: "80%" }}
+      >
         <Card disabled={true}>
-          <Text style={styles.modalText}>Вы действительно хотите завершить смену?</Text>
+          <Text style={styles.modalText}>
+            Вы действительно хотите завершить смену?
+          </Text>
           <View style={styles.buttons}>
-          <Button style={{marginRight: 10}} onPress={() => {
-            setEndWarning(false);
-            dispatch(setIsStarted(false));
-            sendEnd();
-          }}>
-            Да
-          </Button>
-          <Button appearance="outline" onPress={() => setEndWarning(false)}>
-            Нет
-          </Button>
+            <Button
+              style={{ marginRight: 10 }}
+              onPress={() => {
+                setEndWarning(false);
+                dispatch(setIsStarted(false));
+                sendEnd();
+              }}
+            >
+              Да
+            </Button>
+            <Button appearance="outline" onPress={() => setEndWarning(false)}>
+              Нет
+            </Button>
           </View>
         </Card>
       </Modal>
-      <Modal visible={startWarning} backdropStyle={styles.backdrop} style={{ width: '80%' }}>
+      <Modal
+        visible={startWarning}
+        backdropStyle={styles.backdrop}
+        style={{ width: "80%" }}
+      >
         <Card disabled={true}>
-          <Text style={styles.modalText}>Вы действительно хотите начать смену?</Text>
+          <Text style={styles.modalText}>
+            Вы действительно хотите начать смену?
+          </Text>
           <View style={styles.buttons}>
-          <Button style={{ marginRight: 10 }} onPress={() => {
-            click();
-            setStartWarning(false);
-          }}>
-            Да
-          </Button>
-          <Button appearance="outline" onPress={() => setStartWarning(false)}>
-            Нет
-          </Button>
+            <Button
+              style={{ marginRight: 10 }}
+              onPress={() => {
+                click();
+                setStartWarning(false);
+              }}
+            >
+              Да
+            </Button>
+            <Button appearance="outline" onPress={() => setStartWarning(false)}>
+              Нет
+            </Button>
           </View>
         </Card>
       </Modal>
@@ -255,20 +324,20 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "space-around",
     alignItems: "center",
-    padding: 20
+    padding: 20,
   },
   title: {
-    alignSelf: 'flex-start',
-    marginTop: 30
+    alignSelf: "flex-start",
+    marginTop: 30,
   },
   buttonLogin: {
     marginTop: 5,
     paddingBottom: 15,
-    height: 30
+    height: 30,
   },
   flatList: {
     maxHeight: 300,
-    paddingBottom: 20
+    paddingBottom: 20,
   },
   site: {
     margin: 4,
@@ -295,12 +364,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: THEME.PRIMARY_COLOR,
-    marginTop: 10
+    marginTop: 10,
   },
   itemTextImage: {
     flex: 1,
     alignItems: "center",
-    minHeight: 100
+    minHeight: 100,
   },
   selectedSite: {
     borderWidth: 2.5,
@@ -308,27 +377,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   input: {
-    marginTop: 20
+    marginTop: 20,
   },
   descriptionText: {
-    textAlign: 'left',
-    color: THEME.SECONDARY_COLOR
+    textAlign: "left",
+    color: THEME.SECONDARY_COLOR,
   },
   flatListDesc: {
     marginTop: 20,
     marginBottom: 5,
-    color: '#8d9dae'
+    color: "#8d9dae",
   },
   backdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalText: {
     marginTop: 5,
     marginBottom: 20,
-    textAlign: 'center'
+    textAlign: "center",
   },
   buttons: {
-    flexDirection: 'row',
-    justifyContent: 'center'
-  }
+    flexDirection: "row",
+    justifyContent: "center",
+  },
 });

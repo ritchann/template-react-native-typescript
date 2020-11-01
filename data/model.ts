@@ -25,9 +25,9 @@ export interface Profile {
 export interface SiteEventRequest {
   event_type: string;
   created_at: string;
-  data: { 
-    worker_id?: number, 
-    site_id?: number 
+  data: {
+    worker_id?: number;
+    site_id?: number;
   };
 }
 
@@ -36,5 +36,12 @@ export interface IncidentRequest {
   created_at: string;
   data: {
     message: string;
-  }
+  };
+}
+
+export interface PositionRequest {
+  worker_id: number;
+  site_id: number;
+  lon: number;
+  lat: number;
 }
